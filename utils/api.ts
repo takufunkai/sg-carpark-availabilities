@@ -36,3 +36,30 @@ export const getHdbCarparkInfo: (
     return { carparks: [], total: 0 };
   }
 };
+
+export const getUraToken = async (accessKey: string) => {
+  const getUraTokenUrl =
+    "https://www.ura.gov.sg/uraDataService/insertNewToken.action";
+  try {
+    const res = await axios.get(getUraTokenUrl, { headers: { accessKey } });
+    return res;
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export const getUraCarparkAvailability = async (
+  accessKey: string,
+  token: string
+) => {
+  const getUraCarparkAvailabilityUrl =
+    "https://www.ura.gov.sg/uraDataService/invokeUraDS?service=Car_Park_Availability";
+  try {
+    const res = await axios.get(getUraCarparkAvailabilityUrl, {
+      headers: { accessKey, token },
+    });
+    return res;
+  } catch (e) {
+    console.error(e);
+  }
+};

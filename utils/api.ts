@@ -91,11 +91,11 @@ export const getUraCarparkInfo: () => Promise<URACarparkInformation[]> =
     const uraCarparkInformationUrl =
       "https://www.ura.gov.sg/uraDataService/invokeUraDS?service=Car_Park_Details";
     try {
-      const token = await getUraToken(process.env.accessKey!);
+      const token = await getUraToken(process.env.uraAccessKey!);
       const uraCarparksInformationResponse = await axios.get(
         uraCarparkInformationUrl,
         {
-          headers: { accessKey: process.env.accessKey!, token },
+          headers: { accessKey: process.env.uraAccessKey!, token },
         }
       );
       const result: URACarparkInformation[] =

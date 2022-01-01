@@ -33,7 +33,6 @@ const Home: React.FC = () => {
       }
       const result = await getCarparks();
       setCarparks(result);
-      console.log(result);
     } catch (e) {
       console.error(e);
     }
@@ -66,11 +65,6 @@ const Home: React.FC = () => {
 
   return (
     <div>
-      {loading && (
-        <div style={{ position: "absolute", top: "50vh", left: "50vw" }}>
-          <CircularProgress />
-        </div>
-      )}
       <div style={{ display: "flex", justifyContent: "center" }}>
         Carpark Checker
       </div>
@@ -119,6 +113,16 @@ const Home: React.FC = () => {
           {filteredCarparks.length ?? 0}
         </p>
       </div>
+      {loading && (
+        <div
+          style={{
+            textAlign: "center",
+          }}
+        >
+          <CircularProgress />
+          <p>Loading carparks...</p>
+        </div>
+      )}
       <Grid container justifyContent="center" spacing={2}>
         {filteredPaginatedCarparks.map((cp, i) => (
           <Grid

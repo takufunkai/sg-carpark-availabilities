@@ -32,6 +32,7 @@ const CarparkModelHeaderValues = [
   "gantryHeight",
   "carparkBasement",
   "availability",
+  "capacity",
 ];
 
 export const updateCarparkSheet = async (rows: any) => {
@@ -99,6 +100,7 @@ export const getCarparkRows = async (searchFilter?: string[]) => {
         coordinates: JSON.parse(row.coordinates),
         rates: JSON.parse(row.rates),
         availability: JSON.parse(row.availability),
+        capacity: row.capacity,
       };
 
       return cpView;

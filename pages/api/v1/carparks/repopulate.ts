@@ -8,6 +8,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     res.status(500).json({ error: "Only POST requests allowed" });
   }
   try {
+    console.log("Fetching HDB carparks");
     const hdbCarparks = await getHdbCarparkInfo({
       limit: 9999,
       q: "",
@@ -60,6 +61,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           `SUNDAY & PH ${info.sunPHRate} per ${info.sunPHMin}`,
         ],
         availability: [],
+        capacity: info.parkCapacity,
       };
 
       return carparkView;

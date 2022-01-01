@@ -1,12 +1,15 @@
 import { Button, Card, CircularProgress, Grid, TextField } from "@mui/material";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
-import { CarparkView } from "../types/carpark";
+import { CarparkAvailability, CarparkView } from "../types/carpark";
 import { HDBCarparkInformationParams } from "../types/hdb";
 import {
   fetchAndPopulateDatabase,
   getLastUpdated,
   getCarparks,
+  getHdbCarparksAvailability,
+  getUraCarparksAvailability,
+  getUraToken,
 } from "../utils/api";
 
 const initialValues = {
@@ -17,7 +20,65 @@ const initialValues = {
   },
 };
 
-const Home: React.FC = () => {
+interface AvailabilityHashMap {
+  [carparkNumber: string]: CarparkAvailability[];
+}
+
+export const getStaticProps = async () => {
+  let availabilities: AvailabilityHashMap = {};
+
+  try {
+    const hdbCarparkAvailability = await getHdbCarparksAvailability();
+    hdbCarparkAvailability.reduce((map, obj) => {
+      const availabilities: CarparkAvailability[] = obj.carpark_info.map(
+        (info) => ({
+          lotType: info.lot_type,
+          lotsAvailable: info.lots_available,
+          totalLots: info.total_lots,
+        })
+      );
+      if (map[obj.carpark_number]) {
+        map[obj.carpark_number] = [
+          ...map[obj.carpark_number],
+          ...availabilities,
+        ];
+      } else {
+        map[obj.carpark_number] = availabilities;
+      }
+      return map;
+    }, availabilities as Record<string, CarparkAvailability[]>);
+
+    const uraToken = await getUraToken(process.env.uraAccessKey!);
+    const uraCarparkAvailability = await getUraCarparksAvailability(
+      process.env.uraAccessKey!,
+      uraToken
+    );
+    uraCarparkAvailability.reduce((map, obj) => {
+      const availability = {
+        lotType: obj.lotType,
+        lotsAvailable: obj.lotsAvailable,
+      };
+      if (map[obj.carparkNo]) {
+        map[obj.carparkNo] = [...map[obj.carparkNo], availability];
+      } else {
+        map[obj.carparkNo] = [availability];
+      }
+      return map;
+    }, availabilities as Record<string, CarparkAvailability[]>);
+  } catch (e) {
+    console.error(e);
+  }
+  return {
+    props: { availabilities },
+    revalidate: 30,
+  };
+};
+
+interface HomeProps {
+  availabilities: AvailabilityHashMap;
+}
+
+const Home: React.FC<HomeProps> = ({ availabilities }) => {
   const [params, setParams] = useState<HDBCarparkInformationParams>(
     initialValues.HDBCarparkInformationParams
   );
@@ -32,20 +93,29 @@ const Home: React.FC = () => {
         await fetchAndPopulateDatabase();
       }
       const result = await getCarparks();
-      setCarparks(result);
+      const resultWithAvailability = result.map((cp) => ({
+        ...cp,
+        availability: availabilities[cp.carparkNumber] ?? [],
+      }));
+      setCarparks(resultWithAvailability);
     } catch (e) {
       console.error(e);
     }
     setLoading(false);
-  }, []);
+  }, [availabilities]);
 
   useEffect(() => {
     fetchAndSetCarparks();
   }, []);
 
-  const filteredCarparks = carparks.filter((carpark) =>
-    carpark.address.toLowerCase().includes((params.q as string).toLowerCase())
-  );
+  const filteredCarparks = carparks.filter((carpark) => {
+    const searchParams = (params.q as string).split(" ");
+    return searchParams.reduce(
+      (prev, curr) =>
+        prev && carpark.address.toLowerCase().includes(curr.toLowerCase()),
+      true as boolean
+    );
+  });
   const filteredPaginatedCarparks = filteredCarparks.slice(
     params.offset,
     params.offset + params.limit
@@ -114,11 +184,7 @@ const Home: React.FC = () => {
         </p>
       </div>
       {loading && (
-        <div
-          style={{
-            textAlign: "center",
-          }}
-        >
+        <div style={{ textAlign: "center" }}>
           <CircularProgress />
           <p>Loading carparks...</p>
         </div>
@@ -143,10 +209,18 @@ const Home: React.FC = () => {
             >
               <p style={{ textDecoration: "underline" }}>{cp.address}</p>
               <p>Carpark number: {cp.carparkNumber}</p>
+              <p>Availabilities</p>
               {cp.availability.map((avail) => (
-                <p>
-                  {avail.lotType}: {avail.lotsAvailable}/{avail.totalLots}
-                </p>
+                <li key={avail.lotType}>
+                  {avail.lotType}: {avail.lotsAvailable}/
+                  {cp.capacity ?? avail.totalLots ?? ""}
+                </li>
+              ))}
+              <p>Coordinates:</p>
+              {cp.coordinates?.map((coords) => (
+                <li>
+                  x: {coords.xCoord}, y: {coords.yCoord}
+                </li>
               ))}
             </Card>
           </Grid>

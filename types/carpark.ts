@@ -1,3 +1,9 @@
+export interface CarparkAvailability {
+  lotType: string;
+  lotsAvailable: number;
+  totalLots?: number;
+}
+
 export interface CarparkView {
   organisation: string; // TODO: Change type to const array
   carparkNumber: string;
@@ -14,11 +20,8 @@ export interface CarparkView {
   carparkDecks?: number;
   gantryHeight?: number;
   carparkBasement?: string;
-  availability: {
-    lotType: string;
-    lotsAvailable: number;
-    totalLots: number;
-  }[];
+  availability: CarparkAvailability[];
+  capacity?: number;
 }
 
 export interface CarparkModel {
@@ -35,4 +38,5 @@ export interface CarparkModel {
   gantryHeight: number;
   carparkBasement: string;
   availability: string;
+  capacity: string;
 }

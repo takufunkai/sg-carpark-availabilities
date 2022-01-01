@@ -12,8 +12,14 @@ export interface URACarparkInformation {
   sunPHMin: string;
   remarks: string;
   parkingSystem: string;
-  parkCapacity: string;
+  parkCapacity: number;
   geometries: { coordinates: string }[];
+}
+
+export interface URACarparkAvailability {
+  carparkNo: string;
+  lotsAvailable: number;
+  lotType: string;
 }
 
 export interface URAToken {

@@ -6,7 +6,7 @@ import {
   HDBCarparkInformation,
   HDBCarparkInformationParams,
 } from "../types/hdb";
-import { URACarparkInformation } from "../types/ura";
+import { URACarparkAvailability, URACarparkInformation } from "../types/ura";
 
 const appBaseUrl = "http://localhost:3000";
 const apiExtension = "api/v1";
@@ -100,6 +100,9 @@ export const getUraCarparkInfo: () => Promise<URACarparkInformation[]> =
       );
       const result: URACarparkInformation[] =
         uraCarparksInformationResponse.data.Result;
+      if (!result || result.length === 0) {
+        console.error("Failed to fetch ura carpark information");
+      }
       return result;
     } catch (e) {
       console.error(e);
@@ -107,18 +110,19 @@ export const getUraCarparkInfo: () => Promise<URACarparkInformation[]> =
     }
   };
 
-export const getUraCarparkAvailability = async (
+export const getUraCarparksAvailability: (
   accessKey: string,
   token: string
-) => {
+) => Promise<URACarparkAvailability[]> = async (accessKey, token) => {
   const getUraCarparkAvailabilityUrl =
     "https://www.ura.gov.sg/uraDataService/invokeUraDS?service=Car_Park_Availability";
   try {
     const res = await axios.get(getUraCarparkAvailabilityUrl, {
       headers: { accessKey, token },
     });
-    return res;
+    return res.data.Result;
   } catch (e) {
     console.error(e);
+    return [];
   }
 };

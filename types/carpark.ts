@@ -1,37 +1,38 @@
-export interface HDBCarparkAvailability {
-  carpark_number: string;
-  carpark_info: {
-    lot_type: string;
-    lots_available: number;
-    total_lots: number;
+export interface CarparkView {
+  organisation: string; // TODO: Change type to const array
+  carparkNumber: string;
+  address: string;
+  coordinates?: {
+    xCoord: string;
+    yCoord: string;
+  }[];
+  carparkType?: string;
+  typeOfParkingSystem?: string;
+  shortTermParking?: string;
+  rates: string[];
+  nightParking?: string;
+  carparkDecks?: number;
+  gantryHeight?: number;
+  carparkBasement?: string;
+  availability: {
+    lotType: string;
+    lotsAvailable: number;
+    totalLots: number;
   }[];
 }
 
-export interface HDBCarparkInformation {
-  car_park_no: string;
-  address: string;
-  x_coord: string;
-  y_coord: string;
-  car_park_type: string;
-  type_of_parking_system: string;
-  short_term_parking: string;
-  free_parking: string;
-  night_parking: string;
-  car_park_decks: number;
-  gantry_height: number;
-  car_park_basement: string;
-}
-
-export interface CarparkView {
-  carparkOrg: "HDB" | "URA";
-  lotType: string;
-  lotsAvailable: number;
-  totalLots: number;
+export interface CarparkModel {
+  organisation: string; // TODO: Change type to const array
   carparkNumber: string;
-}
-
-export interface HDBCarparkInformationParams {
-  q: string | string[];
-  limit: number;
-  offset: number;
+  address: string;
+  coordinates?: string;
+  carparkType?: string;
+  typeOfParkingSystem: string;
+  shortTermParking: string;
+  rates: string;
+  nightParking: string;
+  carparkDecks: number;
+  gantryHeight: number;
+  carparkBasement: string;
+  availability: string;
 }

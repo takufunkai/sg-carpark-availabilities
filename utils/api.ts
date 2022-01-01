@@ -1,11 +1,48 @@
 import axios from "axios";
 import dayjs from "dayjs";
+import { CarparkView } from "../types/carpark";
 import {
   HDBCarparkAvailability,
   HDBCarparkInformation,
   HDBCarparkInformationParams,
-} from "../types/carpark";
+} from "../types/hdb";
+import { URACarparkInformation } from "../types/ura";
 
+const appBaseUrl = "http://localhost:3000";
+const apiExtension = "api/v1";
+
+// ---------------- OWN APIs -------------------------
+export const getLastUpdated: () => Promise<string> = async () => {
+  try {
+    const lastUpdated = await axios.get(
+      `${appBaseUrl}/${apiExtension}/carparks/lastUpdated`
+    );
+    return lastUpdated.data;
+  } catch (e) {
+    console.error(e);
+    return "";
+  }
+};
+
+export const fetchAndPopulateDatabase = async () => {
+  try {
+    await axios.post(`${appBaseUrl}/${apiExtension}/carparks/repopulate`);
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export const getCarparks: () => Promise<CarparkView[]> = async () => {
+  try {
+    const res = await axios.get(`${appBaseUrl}/${apiExtension}/carparks`);
+    return res.data;
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
+
+// ---------------- HDB APIs -------------------------
 export const getHdbCarparksAvailability: () => Promise<
   HDBCarparkAvailability[]
 > = async () => {
@@ -37,16 +74,38 @@ export const getHdbCarparkInfo: (
   }
 };
 
+// ---------------- HDB APIs -------------------------
 export const getUraToken = async (accessKey: string) => {
   const getUraTokenUrl =
     "https://www.ura.gov.sg/uraDataService/insertNewToken.action";
   try {
     const res = await axios.get(getUraTokenUrl, { headers: { accessKey } });
-    return res;
+    return res.data.Result;
   } catch (e) {
     console.error(e);
   }
 };
+
+export const getUraCarparkInfo: () => Promise<URACarparkInformation[]> =
+  async () => {
+    const uraCarparkInformationUrl =
+      "https://www.ura.gov.sg/uraDataService/invokeUraDS?service=Car_Park_Details";
+    try {
+      const token = await getUraToken(process.env.accessKey!);
+      const uraCarparksInformationResponse = await axios.get(
+        uraCarparkInformationUrl,
+        {
+          headers: { accessKey: process.env.accessKey!, token },
+        }
+      );
+      const result: URACarparkInformation[] =
+        uraCarparksInformationResponse.data.Result;
+      return result;
+    } catch (e) {
+      console.error(e);
+      return [];
+    }
+  };
 
 export const getUraCarparkAvailability = async (
   accessKey: string,

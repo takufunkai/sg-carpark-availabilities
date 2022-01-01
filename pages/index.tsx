@@ -1,23 +1,15 @@
-import { Box, Button, Card, Grid, TextField } from "@mui/material";
-import type { NextPage } from "next";
-import React, { useCallback, useEffect, useState } from "react";
+import { Button, Card, CircularProgress, Grid, TextField } from "@mui/material";
+import dayjs from "dayjs";
+import React, { useEffect, useState } from "react";
+import { CarparkView } from "../types/carpark";
+import { HDBCarparkInformationParams } from "../types/hdb";
 import {
-  HDBCarparkAvailability,
-  HDBCarparkInformation,
-  HDBCarparkInformationParams,
-} from "../types/carpark";
-import { getHdbCarparkInfo, getHdbCarparksAvailability } from "../utils/api";
-import {
-  CarparkLotType,
-  CarparkLotTypes,
-  LotTypeToLabelMap,
-} from "../utils/helper";
+  fetchAndPopulateDatabase,
+  getLastUpdated,
+  getCarparks,
+} from "../utils/api";
 
 const initialValues = {
-  loading: {
-    isLoading: false,
-    resource: "",
-  },
   HDBCarparkInformationParams: {
     q: "",
     limit: 15,
@@ -25,88 +17,60 @@ const initialValues = {
   },
 };
 
-const Home: NextPage = () => {
-  const [searchedCarparks, setSearchedCarparks] = useState<
-    HDBCarparkInformation[]
-  >([]);
-  const [carparkAvailabilities, setCarparkAvailabilities] = useState<
-    HDBCarparkAvailability[]
-  >([]);
-  const [loading, setLoading] = useState<{
-    isLoading: boolean;
-    resource: string;
-  }>(initialValues.loading);
-  const [totalCarparks, setTotalCarparks] = useState<number>(0);
-  const [search, setSearch] = useState<string>("");
+const Home: React.FC = () => {
   const [params, setParams] = useState<HDBCarparkInformationParams>(
     initialValues.HDBCarparkInformationParams
   );
+  const [carparks, setCarparks] = useState<CarparkView[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const fetchCarparkData = useCallback(async () => {
-    setLoading({ isLoading: true, resource: "Loading carparks..." });
+  const fetchAndSetCarparks = React.useCallback(async () => {
+    setLoading(true);
     try {
-      const { carparks, total } = await getHdbCarparkInfo(params);
-      setTotalCarparks(total);
-      setSearchedCarparks(carparks);
-
-      if (carparkAvailabilities.length === 0) {
-        const _carparkAvailabilities = await getHdbCarparksAvailability();
-        setCarparkAvailabilities(_carparkAvailabilities);
+      const lastUpdated = await getLastUpdated();
+      if (dayjs().isAfter(dayjs(lastUpdated), "day")) {
+        await fetchAndPopulateDatabase();
       }
+      const result = await getCarparks();
+      setCarparks(result);
+      console.log(result);
     } catch (e) {
       console.error(e);
     }
-    setLoading(initialValues.loading);
-  }, [params]);
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    fetchCarparkData();
-  }, [params]);
+    fetchAndSetCarparks();
+  }, []);
 
-  const handleSearch = (e: React.FormEvent<HTMLElement>) => {
-    e.preventDefault();
-    setSearchedCarparks([]);
-    setParams({ ...initialValues.HDBCarparkInformationParams, q: search });
-    setTotalCarparks(0);
-  };
+  const filteredCarparks = carparks.filter((carpark) =>
+    carpark.address.toLowerCase().includes((params.q as string).toLowerCase())
+  );
+  const filteredPaginatedCarparks = filteredCarparks.slice(
+    params.offset,
+    params.offset + params.limit
+  );
+
+  useEffect(() => setParams({ ...params, offset: 0 }), [params.q]);
 
   const handleNextPage = () => {
-    if (params.offset + 15 >= totalCarparks) {
-      return;
-    }
-    setSearchedCarparks([]);
+    if (params.offset + 15 >= filteredCarparks.length) return;
     setParams({ ...params, offset: params.offset + 15 });
   };
 
   const handlePrevPage = () => {
-    if (params.offset === 0) {
-      return;
-    }
-    setSearchedCarparks([]);
+    if (params.offset === 0) return;
     setParams({ ...params, offset: params.offset - 15 });
-  };
-
-  const getAvailabilityString = (cp: HDBCarparkInformation) => {
-    const availability = carparkAvailabilities.find(
-      (availability) => availability.carpark_number === cp.car_park_no
-    );
-    if (!availability) return "No data";
-
-    let availabilityString = "";
-    availability.carpark_info.forEach((cpInfo) => {
-      if (!CarparkLotTypes.includes(cpInfo.lot_type as CarparkLotType)) {
-        console.error("Unknown carpark lot type: ", cpInfo.lot_type);
-        return;
-      }
-      const lotTypeLabel = LotTypeToLabelMap[cpInfo.lot_type as CarparkLotType];
-
-      availabilityString += `${lotTypeLabel}: ${cpInfo.lots_available}/${cpInfo.total_lots} `;
-    });
-    return availabilityString;
   };
 
   return (
     <div>
+      {loading && (
+        <div style={{ position: "absolute", top: "50vh", left: "50vw" }}>
+          <CircularProgress />
+        </div>
+      )}
       <div style={{ display: "flex", justifyContent: "center" }}>
         Carpark Checker
       </div>
@@ -117,17 +81,12 @@ const Home: NextPage = () => {
           alignItems: "center",
         }}
       >
-        <form onSubmit={(e) => handleSearch(e)}>
-          <TextField
-            onSubmit={(e) => e.preventDefault()}
-            size="small"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <Button type="submit" disabled={loading.isLoading}>
-            Search
-          </Button>
-        </form>
+        <TextField
+          onSubmit={(e) => e.preventDefault()}
+          size="small"
+          value={params.q}
+          onChange={(e) => setParams({ ...params, q: e.target.value })}
+        />
       </div>
       <div
         style={{
@@ -139,7 +98,7 @@ const Home: NextPage = () => {
         <Button
           style={{ margin: "5px" }}
           onClick={handlePrevPage}
-          disabled={loading.isLoading || params.offset === 0}
+          disabled={params.offset === 0}
           variant="outlined"
         >
           Prev
@@ -147,26 +106,23 @@ const Home: NextPage = () => {
         <Button
           style={{ margin: "5px" }}
           onClick={handleNextPage}
-          disabled={loading.isLoading || params.offset + 15 >= totalCarparks}
+          disabled={params.offset + 15 >= filteredCarparks.length}
           variant="outlined"
         >
           Next
         </Button>
       </div>
       <div style={{ display: "flex", justifyContent: "center" }}>
-        {loading.isLoading ? (
-          <>{loading.resource}</>
-        ) : (
-          <p>
-            Showing {params.offset + 1} -{" "}
-            {params.offset + searchedCarparks.length} of {totalCarparks ?? 0}
-          </p>
-        )}
+        <p>
+          Showing {filteredPaginatedCarparks.length > 0 ? params.offset + 1 : 0}{" "}
+          - {params.offset + filteredPaginatedCarparks.length} of{" "}
+          {filteredCarparks.length ?? 0}
+        </p>
       </div>
       <Grid container justifyContent="center" spacing={2}>
-        {searchedCarparks.map((cp, i) => (
+        {filteredPaginatedCarparks.map((cp, i) => (
           <Grid
-            key={"" + cp.car_park_no + i}
+            key={"" + cp.carparkNumber + i}
             container
             item
             xs={12}
@@ -181,20 +137,13 @@ const Home: NextPage = () => {
                 backgroundColor: "#f5f5f5",
               }}
             >
-              <Grid item xs={12}>
-                <p style={{ textDecoration: "underline" }}>{cp.address}</p>
-              </Grid>
-              <Grid container item>
-                <Grid xs={12}>
-                  <p>Carpark number: {cp.car_park_no}</p>
-                </Grid>
-                <Grid xs={12}>
-                  <p>Carpark type: {cp.car_park_type}</p>
-                </Grid>
-                <Grid xs={12}>
-                  <p>Availability: {getAvailabilityString(cp)}</p>
-                </Grid>
-              </Grid>
+              <p style={{ textDecoration: "underline" }}>{cp.address}</p>
+              <p>Carpark number: {cp.carparkNumber}</p>
+              {cp.availability.map((avail) => (
+                <p>
+                  {avail.lotType}: {avail.lotsAvailable}/{avail.totalLots}
+                </p>
+              ))}
             </Card>
           </Grid>
         ))}

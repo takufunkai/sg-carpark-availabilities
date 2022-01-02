@@ -1,7 +1,9 @@
 import { Button, Card, CircularProgress, Grid, TextField } from "@mui/material";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
+import Map from "../components/Map";
 import { CarparkAvailability, CarparkView } from "../types/carpark";
+import { WGS84Coordinates } from "../types/common";
 import { HDBCarparkInformationParams } from "../types/hdb";
 import {
   fetchAndPopulateDatabase,
@@ -121,6 +123,10 @@ const Home: React.FC<HomeProps> = ({ availabilities }) => {
     params.offset + params.limit
   );
 
+  const carparkMapCoordinates: WGS84Coordinates[] = React.useMemo(() => {
+    return filteredCarparks.flatMap((carpark) => carpark.latLon ?? []);
+  }, [filteredCarparks]);
+
   useEffect(() => setParams({ ...params, offset: 0 }), [params.q]);
 
   const handleNextPage = () => {
@@ -134,99 +140,110 @@ const Home: React.FC<HomeProps> = ({ availabilities }) => {
   };
 
   return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        Carpark Checker
-      </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <TextField
-          onSubmit={(e) => e.preventDefault()}
-          size="small"
-          value={params.q}
-          onChange={(e) => setParams({ ...params, q: e.target.value })}
-        />
-      </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Button
-          style={{ margin: "5px" }}
-          onClick={handlePrevPage}
-          disabled={params.offset === 0}
-          variant="outlined"
-        >
-          Prev
-        </Button>
-        <Button
-          style={{ margin: "5px" }}
-          onClick={handleNextPage}
-          disabled={params.offset + 15 >= filteredCarparks.length}
-          variant="outlined"
-        >
-          Next
-        </Button>
-      </div>
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <p>
-          Showing {filteredPaginatedCarparks.length > 0 ? params.offset + 1 : 0}{" "}
-          - {params.offset + filteredPaginatedCarparks.length} of{" "}
-          {filteredCarparks.length ?? 0}
-        </p>
-      </div>
-      {loading && (
-        <div style={{ textAlign: "center" }}>
-          <CircularProgress />
-          <p>Loading carparks...</p>
+    <>
+      <div>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          Carpark Checker
         </div>
-      )}
-      <Grid container justifyContent="center" spacing={2}>
-        {filteredPaginatedCarparks.map((cp, i) => (
-          <Grid
-            key={"" + cp.carparkNumber + i}
-            container
-            item
-            xs={12}
-            justifyContent="center"
+        <div style={{ margin: "2vh" }}>
+          <Map carparkCoordinates={carparkMapCoordinates!} />
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <TextField
+            onSubmit={(e) => e.preventDefault()}
+            size="small"
+            value={params.q}
+            onChange={(e) => setParams({ ...params, q: e.target.value })}
+          />
+        </div>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Button
+            style={{ margin: "5px" }}
+            onClick={handlePrevPage}
+            disabled={params.offset === 0}
+            variant="outlined"
           >
-            <Card
-              style={{
-                width: "500px",
-                maxWidth: "80vw",
-                height: "100%",
-                padding: "1vw",
-                backgroundColor: "#f5f5f5",
-              }}
+            Prev
+          </Button>
+          <Button
+            style={{ margin: "5px" }}
+            onClick={handleNextPage}
+            disabled={params.offset + 15 >= filteredCarparks.length}
+            variant="outlined"
+          >
+            Next
+          </Button>
+        </div>
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <p>
+            Showing{" "}
+            {filteredPaginatedCarparks.length > 0 ? params.offset + 1 : 0} -{" "}
+            {params.offset + filteredPaginatedCarparks.length} of{" "}
+            {filteredCarparks.length ?? 0}
+          </p>
+        </div>
+        {loading && (
+          <div style={{ textAlign: "center" }}>
+            <CircularProgress />
+            <p>Loading carparks...</p>
+          </div>
+        )}
+        <Grid container justifyContent="center" spacing={2}>
+          {filteredPaginatedCarparks.map((cp, i) => (
+            <Grid
+              key={"" + cp.carparkNumber + i}
+              container
+              item
+              xs={12}
+              justifyContent="center"
             >
-              <p style={{ textDecoration: "underline" }}>{cp.address}</p>
-              <p>Carpark number: {cp.carparkNumber}</p>
-              <p>Availabilities</p>
-              {cp.availability.map((avail) => (
-                <li key={avail.lotType}>
-                  {avail.lotType}: {avail.lotsAvailable}/
-                  {cp.capacity ?? avail.totalLots ?? ""}
-                </li>
-              ))}
-              <p>Coordinates:</p>
-              {cp.coordinates?.map((coords) => (
-                <li>
-                  x: {coords.xCoord}, y: {coords.yCoord}
-                </li>
-              ))}
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </div>
+              <Card
+                style={{
+                  width: "500px",
+                  maxWidth: "80vw",
+                  height: "100%",
+                  padding: "1vw",
+                  backgroundColor: "#f5f5f5",
+                }}
+              >
+                <p style={{ textDecoration: "underline" }}>{cp.address}</p>
+                <p>Carpark number: {cp.carparkNumber}</p>
+                <p>Availabilities</p>
+                {cp.availability.map((avail) => (
+                  <li key={avail.lotType}>
+                    {avail.lotType}: {avail.lotsAvailable}/
+                    {avail.totalLots ?? cp.capacity}
+                  </li>
+                ))}
+                <p>Coordinates:</p>
+                {cp.coordinates?.map((coords) => (
+                  <li>
+                    x: {coords.xCoord}, y: {coords.yCoord}
+                  </li>
+                ))}
+                {cp.latLon?.map((latLon) => (
+                  <li>
+                    lat: {latLon.latitude}, lon: {latLon.longitude}
+                  </li>
+                ))}
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </div>
+    </>
   );
 };
 

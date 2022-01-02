@@ -33,6 +33,7 @@ const CarparkModelHeaderValues = [
   "carparkBasement",
   "availability",
   "capacity",
+  "latLon",
 ];
 
 export const updateCarparkSheet = async (rows: any) => {
@@ -51,6 +52,7 @@ export const updateCarparkSheet = async (rows: any) => {
       coordinates: JSON.stringify(carpark.coordinates),
       rates: JSON.stringify(carpark.rates),
       availability: JSON.stringify(carpark.availability),
+      latLon: JSON.stringify(carpark.latLon),
     }));
     newSheet.addRows(rowsJson);
 
@@ -101,6 +103,7 @@ export const getCarparkRows = async (searchFilter?: string[]) => {
         rates: JSON.parse(row.rates),
         availability: JSON.parse(row.availability),
         capacity: row.capacity,
+        latLon: JSON.parse(row.latLon),
       };
 
       return cpView;

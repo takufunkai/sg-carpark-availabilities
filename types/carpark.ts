@@ -1,3 +1,5 @@
+import { SVY21Coordinates, WGS84Coordinates } from "./common";
+
 export interface CarparkAvailability {
   lotType: string;
   lotsAvailable: number;
@@ -8,10 +10,7 @@ export interface CarparkView {
   organisation: string; // TODO: Change type to const array
   carparkNumber: string;
   address: string;
-  coordinates?: {
-    xCoord: string;
-    yCoord: string;
-  }[];
+  coordinates?: SVY21Coordinates[];
   carparkType?: string;
   typeOfParkingSystem?: string;
   shortTermParking?: string;
@@ -22,6 +21,7 @@ export interface CarparkView {
   carparkBasement?: string;
   availability: CarparkAvailability[];
   capacity?: number;
+  latLon?: WGS84Coordinates[];
 }
 
 export interface CarparkModel {

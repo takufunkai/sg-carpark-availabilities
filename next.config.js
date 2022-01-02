@@ -8,5 +8,6 @@ module.exports = {
       /\n/g,
       "\n"
     ),
+    mapboxGlAccessKey: "pk.eyJ1IjoiZXpla2llbHRvaCIsImEiOiJja3h3M3lkaWowNTFwMnBycTE2Y28wczN5In0.ZSVxNQkKiuhv6qfyGwyx3w",
   }
 }

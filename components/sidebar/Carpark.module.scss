@@ -1,0 +1,48 @@
+.textFieldDiv {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .textField {
+    background-color: white;
+  }
+}
+.scrollPageButtonsDiv {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  .button {
+    margin: 5px;
+  }
+}
+.metaDiv {
+  display: flex;
+  justify-content: center;
+}
+.setModeDiv {
+  display: flex;
+  justify-content: space-evenly;
+  .setModeText {
+    text-decoration: underline;
+    cursor: pointer;
+    &:hover {
+      color: #999;
+    }
+  }
+}
+.listContainer {
+  justify-content: center;
+  .carparkCard {
+    width: 500px;
+    max-width: 80vw;
+    height: 100%;
+    padding: 1vw;
+    background: #f5f5f5;
+    .address {
+      text-decoration: underline;
+      cursor: pointer;
+      &:hover {
+        color: #999;
+      }
+    }
+  }
+}

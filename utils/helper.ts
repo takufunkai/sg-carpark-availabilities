@@ -26,3 +26,24 @@ export const convertSVY21ToWGS84: (
     return {};
   }
 };
+
+// https://stackoverflow.com/questions/639695/how-to-convert-latitude-or-longitude-to-meters
+// Haversine Formula
+export const measureDistance = (
+  from: WGS84Coordinates,
+  to: WGS84Coordinates
+) => {
+  var R = 6378.137; // Radius of earth in KM
+  var dLat = (+to.latitude * Math.PI) / 180 - (+from.latitude * Math.PI) / 180;
+  var dLon =
+    (+to.longitude * Math.PI) / 180 - (+from.longitude * Math.PI) / 180;
+  var a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((+from.latitude * Math.PI) / 180) *
+      Math.cos((+to.latitude * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  var d = R * c;
+  return d * 1000; // meters
+};

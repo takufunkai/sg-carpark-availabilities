@@ -59,7 +59,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             async (svy21) => await convertSVY21ToWGS84(svy21)
           )
         );
-
         let carparkView: CarparkView = {
           organisation: "URA",
           carparkNumber: info.ppCode,

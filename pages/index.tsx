@@ -1,28 +1,15 @@
-import { Button, Card, CircularProgress, Grid, TextField } from "@mui/material";
-import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import Map from "../components/Map";
-import { CarparkAvailability, CarparkView } from "../types/carpark";
-import { WGS84Coordinates } from "../types/common";
-import { HDBCarparkInformationParams } from "../types/hdb";
+import { CarparkAvailability } from "../types/carpark";
 import {
-  fetchAndPopulateDatabase,
-  getLastUpdated,
-  getCarparks,
   getHdbCarparksAvailability,
   getUraCarparksAvailability,
   getUraToken,
 } from "../utils/api";
+import Sidebar from "../components/sidebar";
+import { useStore } from "../utils/store";
 
-const initialValues = {
-  HDBCarparkInformationParams: {
-    q: "",
-    limit: 15,
-    offset: 0,
-  },
-};
-
-interface AvailabilityHashMap {
+export interface AvailabilityHashMap {
   [carparkNumber: string]: CarparkAvailability[];
 }
 
@@ -81,169 +68,33 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ availabilities }) => {
-  const [params, setParams] = useState<HDBCarparkInformationParams>(
-    initialValues.HDBCarparkInformationParams
-  );
-  const [carparks, setCarparks] = useState<CarparkView[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const { fetchCarparks, setCurrentLocation } = useStore((state) => ({
+    fetchCarparks: state.fetchCarparks,
+    setCurrentLocation: state.setCurrentLocation,
+  }));
 
   const fetchAndSetCarparks = React.useCallback(async () => {
-    setLoading(true);
     try {
-      const lastUpdated = await getLastUpdated();
-      if (dayjs().isAfter(dayjs(lastUpdated), "day")) {
-        await fetchAndPopulateDatabase();
-      }
-      const result = await getCarparks();
-      const resultWithAvailability = result.map((cp) => ({
-        ...cp,
-        availability: availabilities[cp.carparkNumber] ?? [],
-      }));
-      setCarparks(resultWithAvailability);
+      await fetchCarparks(availabilities);
+      setCurrentLocation();
     } catch (e) {
       console.error(e);
     }
-    setLoading(false);
+    navigator.geolocation.getCurrentPosition(function (position) {
+      console.log("Latitude is :", position.coords.latitude);
+      console.log("Longitude is :", position.coords.longitude);
+    });
   }, [availabilities]);
 
   useEffect(() => {
     fetchAndSetCarparks();
   }, []);
 
-  const filteredCarparks = carparks.filter((carpark) => {
-    const searchParams = (params.q as string).split(" ");
-    return searchParams.reduce(
-      (prev, curr) =>
-        prev && carpark.address.toLowerCase().includes(curr.toLowerCase()),
-      true as boolean
-    );
-  });
-  const filteredPaginatedCarparks = filteredCarparks.slice(
-    params.offset,
-    params.offset + params.limit
-  );
-
-  const carparkMapCoordinates: WGS84Coordinates[] = React.useMemo(() => {
-    return filteredCarparks.flatMap((carpark) => carpark.latLon ?? []);
-  }, [filteredCarparks]);
-
-  useEffect(() => setParams({ ...params, offset: 0 }), [params.q]);
-
-  const handleNextPage = () => {
-    if (params.offset + 15 >= filteredCarparks.length) return;
-    setParams({ ...params, offset: params.offset + 15 });
-  };
-
-  const handlePrevPage = () => {
-    if (params.offset === 0) return;
-    setParams({ ...params, offset: params.offset - 15 });
-  };
-
   return (
-    <>
-      <div>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          Carpark Checker
-        </div>
-        <div style={{ margin: "2vh" }}>
-          <Map carparkCoordinates={carparkMapCoordinates!} />
-        </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <TextField
-            onSubmit={(e) => e.preventDefault()}
-            size="small"
-            value={params.q}
-            onChange={(e) => setParams({ ...params, q: e.target.value })}
-          />
-        </div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Button
-            style={{ margin: "5px" }}
-            onClick={handlePrevPage}
-            disabled={params.offset === 0}
-            variant="outlined"
-          >
-            Prev
-          </Button>
-          <Button
-            style={{ margin: "5px" }}
-            onClick={handleNextPage}
-            disabled={params.offset + 15 >= filteredCarparks.length}
-            variant="outlined"
-          >
-            Next
-          </Button>
-        </div>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <p>
-            Showing{" "}
-            {filteredPaginatedCarparks.length > 0 ? params.offset + 1 : 0} -{" "}
-            {params.offset + filteredPaginatedCarparks.length} of{" "}
-            {filteredCarparks.length ?? 0}
-          </p>
-        </div>
-        {loading && (
-          <div style={{ textAlign: "center" }}>
-            <CircularProgress />
-            <p>Loading carparks...</p>
-          </div>
-        )}
-        <Grid container justifyContent="center" spacing={2}>
-          {filteredPaginatedCarparks.map((cp, i) => (
-            <Grid
-              key={"" + cp.carparkNumber + i}
-              container
-              item
-              xs={12}
-              justifyContent="center"
-            >
-              <Card
-                style={{
-                  width: "500px",
-                  maxWidth: "80vw",
-                  height: "100%",
-                  padding: "1vw",
-                  backgroundColor: "#f5f5f5",
-                }}
-              >
-                <p style={{ textDecoration: "underline" }}>{cp.address}</p>
-                <p>Carpark number: {cp.carparkNumber}</p>
-                <p>Availabilities</p>
-                {cp.availability.map((avail) => (
-                  <li key={avail.lotType}>
-                    {avail.lotType}: {avail.lotsAvailable}/
-                    {avail.totalLots ?? cp.capacity}
-                  </li>
-                ))}
-                <p>Coordinates:</p>
-                {cp.coordinates?.map((coords) => (
-                  <li>
-                    x: {coords.xCoord}, y: {coords.yCoord}
-                  </li>
-                ))}
-                {cp.latLon?.map((latLon) => (
-                  <li>
-                    lat: {latLon.latitude}, lon: {latLon.longitude}
-                  </li>
-                ))}
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </div>
-    </>
+    <div>
+      <Map />
+      <Sidebar />
+    </div>
   );
 };
 

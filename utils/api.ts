@@ -74,7 +74,7 @@ export const getHdbCarparkInfo: (
   }
 };
 
-// ---------------- HDB APIs -------------------------
+// ---------------- URA APIs -------------------------
 export const getUraToken = async (accessKey: string) => {
   const getUraTokenUrl =
     "https://www.ura.gov.sg/uraDataService/insertNewToken.action";
@@ -86,29 +86,30 @@ export const getUraToken = async (accessKey: string) => {
   }
 };
 
-export const getUraCarparkInfo: () => Promise<URACarparkInformation[]> =
-  async () => {
-    const uraCarparkInformationUrl =
-      "https://www.ura.gov.sg/uraDataService/invokeUraDS?service=Car_Park_Details";
-    try {
-      const token = await getUraToken(process.env.uraAccessKey!);
-      const uraCarparksInformationResponse = await axios.get(
-        uraCarparkInformationUrl,
-        {
-          headers: { accessKey: process.env.uraAccessKey!, token },
-        }
-      );
-      const result: URACarparkInformation[] =
-        uraCarparksInformationResponse.data.Result;
-      if (!result || result.length === 0) {
-        console.error("Failed to fetch ura carpark information");
+export const getUraCarparkInfo: () => Promise<
+  URACarparkInformation[]
+> = async () => {
+  const uraCarparkInformationUrl =
+    "https://www.ura.gov.sg/uraDataService/invokeUraDS?service=Car_Park_Details";
+  try {
+    const token = await getUraToken(process.env.uraAccessKey!);
+    const uraCarparksInformationResponse = await axios.get(
+      uraCarparkInformationUrl,
+      {
+        headers: { accessKey: process.env.uraAccessKey!, token },
       }
-      return result;
-    } catch (e) {
-      console.error(e);
-      return [];
+    );
+    const result: URACarparkInformation[] =
+      uraCarparksInformationResponse.data.Result;
+    if (!result || result.length === 0) {
+      console.error("Failed to fetch ura carpark information");
     }
-  };
+    return result;
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+};
 
 export const getUraCarparksAvailability: (
   accessKey: string,

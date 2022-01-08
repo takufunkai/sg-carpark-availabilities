@@ -1,7 +1,8 @@
 .container {
   position: absolute;
   height: 90vh;
-  width: 40vw;
+  width: 500px;
+  max-width: 90vw;
 
   top: 2vw;
   left: 2vw;
@@ -11,4 +12,10 @@
   background-color: rgba(234, 233, 233, 1);
   overflow-y: scroll;
   padding: 2vw;
+}
+.showButton {
+  position: absolute;
+  z-index: 9;
+  top: 4vw;
+  left: 4vw;
 }

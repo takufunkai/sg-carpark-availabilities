@@ -113,10 +113,10 @@ const Carparks = () => {
       </div>
       <div className={styles.setModeDiv}>
         <p className={styles.setModeText} onClick={() => setMode("all")}>
-          all carparks
+          ALL CARPARKS
         </p>
         <p className={styles.setModeText} onClick={() => setMode("nearby")}>
-          nearby me
+          NEARBY CARPARKS
         </p>
       </div>
       <Grid className={styles.listContainer} container spacing={2}>
@@ -132,23 +132,11 @@ const Carparks = () => {
               <p className={styles.address} onClick={handleClickAddress(cp)}>
                 {cp.address}
               </p>
-              <p>Carpark number: {cp.carparkNumber}</p>
-              <p>Availabilities</p>
+              <p>Availabilities:</p>
               {cp.availability.map((avail) => (
                 <li key={avail.lotType}>
                   {avail.lotType}: {avail.lotsAvailable}/
                   {avail.totalLots ?? cp.capacity}
-                </li>
-              ))}
-              <p>Coordinates:</p>
-              {cp.coordinates?.map((coords) => (
-                <li>
-                  x: {coords.xCoord}, y: {coords.yCoord}
-                </li>
-              ))}
-              {cp.latLon?.map((latLon) => (
-                <li>
-                  lat: {latLon.latitude}, lon: {latLon.longitude}
                 </li>
               ))}
             </Card>

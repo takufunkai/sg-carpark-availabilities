@@ -3,8 +3,8 @@ import dayjs from "dayjs";
 import { CarparkView } from "../types/carpark";
 import { HDBCarparkAvailability } from "../types/hdb";
 import { URACarparkAvailability } from "../types/ura";
+import { BASE_URL } from "./constants";
 
-const appBaseUrl = "http://localhost:3000";
 const apiExtension = "api/v1";
 
 /*
@@ -16,7 +16,7 @@ const apiExtension = "api/v1";
 export const getLastUpdated: () => Promise<string> = async () => {
   try {
     const lastUpdated = await axios.get(
-      `${appBaseUrl}/${apiExtension}/carparks/lastUpdated`
+      `${BASE_URL}/${apiExtension}/carparks/lastUpdated`
     );
     return lastUpdated.data;
   } catch (e) {
@@ -27,7 +27,7 @@ export const getLastUpdated: () => Promise<string> = async () => {
 
 export const fetchAndPopulateDatabase = async () => {
   try {
-    await axios.post(`${appBaseUrl}/${apiExtension}/carparks/repopulate`);
+    await axios.post(`${BASE_URL}/${apiExtension}/carparks/repopulate`);
   } catch (e) {
     console.error(e);
   }
@@ -35,7 +35,7 @@ export const fetchAndPopulateDatabase = async () => {
 
 export const getCarparks: () => Promise<CarparkView[]> = async () => {
   try {
-    const res = await axios.get(`${appBaseUrl}/${apiExtension}/carparks`);
+    const res = await axios.get(`${BASE_URL}/${apiExtension}/carparks`);
     return res.data;
   } catch (e) {
     console.error(e);

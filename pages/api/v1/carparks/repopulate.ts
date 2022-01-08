@@ -1,8 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { CarparkView } from "../../../../types/carpark";
 import { updateCarparkSheet } from "../../../../utils/sheets";
-import { getHdbCarparkInfo, getUraCarparkInfo } from "../../../../utils/api";
+import { getUraToken } from "../../../../utils/api";
 import { convertSVY21ToWGS84 } from "../../../../utils/helper";
+import axios from "axios";
+import {
+  HDBCarparkInformationParams,
+  HDBCarparkInformation,
+} from "../../../../types/hdb";
+import { URACarparkInformation } from "../../../../types/ura";
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method !== "POST") {
@@ -100,5 +106,44 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: e });
+  }
+};
+
+const getHdbCarparkInfo: (
+  params?: HDBCarparkInformationParams
+) => Promise<{ carparks: HDBCarparkInformation[]; total: number }> = async (
+  params
+) => {
+  const hdbCarparkInformationUrl =
+    "https://data.gov.sg/api/action/datastore_search?resource_id=139a3035-e624-4f56-b63f-89ae28d4ae4c";
+  try {
+    const res = await axios.get(hdbCarparkInformationUrl, { params });
+    return { carparks: res.data.result.records, total: res.data.result.total };
+  } catch (e) {
+    console.error(e);
+    return { carparks: [], total: 0 };
+  }
+};
+
+const getUraCarparkInfo: () => Promise<URACarparkInformation[]> = async () => {
+  const uraCarparkInformationUrl =
+    "https://www.ura.gov.sg/uraDataService/invokeUraDS?service=Car_Park_Details";
+  try {
+    const token = await getUraToken(process.env.uraAccessKey!);
+    const uraCarparksInformationResponse = await axios.get(
+      uraCarparkInformationUrl,
+      {
+        headers: { accessKey: process.env.uraAccessKey!, token },
+      }
+    );
+    const result: URACarparkInformation[] =
+      uraCarparksInformationResponse.data.Result;
+    if (!result || result.length === 0) {
+      console.error("Failed to fetch ura carpark information");
+    }
+    return result;
+  } catch (e) {
+    console.error(e);
+    return [];
   }
 };

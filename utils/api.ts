@@ -1,15 +1,16 @@
 import axios from "axios";
 import dayjs from "dayjs";
 import { CarparkView } from "../types/carpark";
-import {
-  HDBCarparkAvailability,
-  HDBCarparkInformation,
-  HDBCarparkInformationParams,
-} from "../types/hdb";
-import { URACarparkAvailability, URACarparkInformation } from "../types/ura";
+import { HDBCarparkAvailability } from "../types/hdb";
+import { URACarparkAvailability } from "../types/ura";
 
 const appBaseUrl = "http://localhost:3000";
 const apiExtension = "api/v1";
+
+/*
+ * All calls here should be client/ client + server side calls
+ * Pure server side calls do not belong here
+ */
 
 // ---------------- OWN APIs -------------------------
 export const getLastUpdated: () => Promise<string> = async () => {
@@ -58,22 +59,6 @@ export const getHdbCarparksAvailability: () => Promise<
   }
 };
 
-export const getHdbCarparkInfo: (
-  params?: HDBCarparkInformationParams
-) => Promise<{ carparks: HDBCarparkInformation[]; total: number }> = async (
-  params
-) => {
-  const hdbCarparkInformationUrl =
-    "https://data.gov.sg/api/action/datastore_search?resource_id=139a3035-e624-4f56-b63f-89ae28d4ae4c";
-  try {
-    const res = await axios.get(hdbCarparkInformationUrl, { params });
-    return { carparks: res.data.result.records, total: res.data.result.total };
-  } catch (e) {
-    console.error(e);
-    return { carparks: [], total: 0 };
-  }
-};
-
 // ---------------- URA APIs -------------------------
 export const getUraToken = async (accessKey: string) => {
   const getUraTokenUrl =
@@ -83,31 +68,6 @@ export const getUraToken = async (accessKey: string) => {
     return res.data.Result;
   } catch (e) {
     console.error(e);
-  }
-};
-
-export const getUraCarparkInfo: () => Promise<
-  URACarparkInformation[]
-> = async () => {
-  const uraCarparkInformationUrl =
-    "https://www.ura.gov.sg/uraDataService/invokeUraDS?service=Car_Park_Details";
-  try {
-    const token = await getUraToken(process.env.uraAccessKey!);
-    const uraCarparksInformationResponse = await axios.get(
-      uraCarparkInformationUrl,
-      {
-        headers: { accessKey: process.env.uraAccessKey!, token },
-      }
-    );
-    const result: URACarparkInformation[] =
-      uraCarparksInformationResponse.data.Result;
-    if (!result || result.length === 0) {
-      console.error("Failed to fetch ura carpark information");
-    }
-    return result;
-  } catch (e) {
-    console.error(e);
-    return [];
   }
 };
 

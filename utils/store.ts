@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import create from "zustand";
-import { AvailabilityHashMap } from "../pages";
-import { CarparkView } from "../types/carpark";
+import { AvailabilityHashMap, CarparkView } from "../types/carpark";
 import { WGS84Coordinates } from "../types/common";
 import { fetchAndPopulateDatabase, getCarparks, getLastUpdated } from "./api";
 
@@ -43,7 +42,7 @@ export const useStore = create<State>((set, get) => ({
       const result = await getCarparks();
       const resultWithAvailability = result.map((cp) => ({
         ...cp,
-        availability: availabilities[cp.carparkNumber] ?? [],
+        availability: availabilities[cp.carparkNumber] ?? cp.availability,
       }));
       set(() => ({
         carparks: resultWithAvailability,

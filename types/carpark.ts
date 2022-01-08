@@ -40,3 +40,7 @@ export interface CarparkModel {
   availability: string;
   capacity: string;
 }
+
+export interface AvailabilityHashMap {
+  [carparkNumber: string]: CarparkAvailability[];
+}

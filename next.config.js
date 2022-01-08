@@ -9,5 +9,6 @@ module.exports = {
       "\n"
     ),
     mapboxGlAccessKey: "pk.eyJ1IjoiZXpla2llbHRvaCIsImEiOiJja3h3M3lkaWowNTFwMnBycTE2Y28wczN5In0.ZSVxNQkKiuhv6qfyGwyx3w",
+    ltaAccountKey: "B+Y+k7T5TMOg436C1riinQ==",
   }
 }

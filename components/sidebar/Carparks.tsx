@@ -133,12 +133,18 @@ const Carparks = () => {
                 {cp.address}
               </p>
               <p>Availabilities:</p>
-              {cp.availability.map((avail) => (
-                <li key={avail.lotType}>
-                  {avail.lotType}: {avail.lotsAvailable}/
-                  {avail.totalLots ?? cp.capacity}
-                </li>
-              ))}
+              {cp.availability.map((avail) => {
+                return (
+                  <li key={avail.lotType}>
+                    {avail.lotType}: {avail.lotsAvailable}
+                    {avail.totalLots
+                      ? "/" + avail.totalLots
+                      : cp.capacity
+                      ? "/" + cp.capacity
+                      : ""}
+                  </li>
+                );
+              })}
             </Card>
           </Grid>
         ))}

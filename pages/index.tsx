@@ -80,10 +80,6 @@ const Home: React.FC<HomeProps> = ({ availabilities }) => {
     } catch (e) {
       console.error(e);
     }
-    navigator.geolocation.getCurrentPosition(function (position) {
-      console.log("Latitude is :", position.coords.latitude);
-      console.log("Longitude is :", position.coords.longitude);
-    });
   }, [availabilities]);
 
   useEffect(() => {

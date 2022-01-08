@@ -39,7 +39,6 @@ const Carparks = () => {
   const nearbyFilter = (carpark: CarparkView) => {
     const searchParams = (params.q as string).split(" ");
     if (!carpark.latLon || !carpark.latLon[0]) return false;
-    console.log(currentLocation);
     if (measureDistance(carpark.latLon[0], currentLocation) > 1000) {
       return false;
     }

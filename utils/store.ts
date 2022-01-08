@@ -22,13 +22,16 @@ export const useStore = create<State>((set, get) => ({
   center: { longitude: "103.7729792", latitude: "1.3795328" },
   currentLocation: { longitude: "103.89946", latitude: "1.388403" },
   setCurrentLocation: () => {
-    navigator.geolocation.getCurrentPosition((position) =>
-      set((state) => ({
-        currentLocation: {
-          latitude: "" + position.coords.latitude,
-          longitude: "" + position.coords.longitude,
-        },
-      }))
+    navigator.geolocation.getCurrentPosition(
+      (position) =>
+        set((state) => ({
+          currentLocation: {
+            latitude: "" + position.coords.latitude,
+            longitude: "" + position.coords.longitude,
+          },
+        })),
+      console.error,
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 10000 }
     );
   },
   fetchCarparks: async (availabilities: AvailabilityHashMap) => {

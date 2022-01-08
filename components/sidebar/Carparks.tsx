@@ -54,7 +54,15 @@ const Carparks = () => {
     setParams({ ...params, offset: 0 });
   }, [params.q, mode]);
 
-  const filteredPaginatedCarparks = filteredCarparks.slice(
+  const filteredSortedCarparks =
+    mode === "all"
+      ? filteredCarparks
+      : filteredCarparks.sort((cp) => {
+          if (!cp.latLon || !cp.latLon[0]) return Number.MAX_SAFE_INTEGER;
+          return measureDistance(cp.latLon![0], currentLocation);
+        });
+
+  const filteredSortedPaginatedCarparks = filteredSortedCarparks.slice(
     params.offset,
     params.offset + params.limit
   );
@@ -81,6 +89,7 @@ const Carparks = () => {
         <TextField
           className={styles.textField}
           onSubmit={(e) => e.preventDefault()}
+          placeholder="search"
           size="small"
           value={params.q}
           onChange={(e) => setParams({ ...params, q: e.target.value })}
@@ -106,8 +115,9 @@ const Carparks = () => {
       </div>
       <div className={styles.metaDiv}>
         <p>
-          Showing {filteredPaginatedCarparks.length > 0 ? params.offset + 1 : 0}{" "}
-          - {params.offset + filteredPaginatedCarparks.length} of{" "}
+          Showing{" "}
+          {filteredSortedPaginatedCarparks.length > 0 ? params.offset + 1 : 0} -{" "}
+          {params.offset + filteredSortedPaginatedCarparks.length} of{" "}
           {filteredCarparks.length ?? 0}
         </p>
       </div>
@@ -120,7 +130,7 @@ const Carparks = () => {
         </p>
       </div>
       <Grid className={styles.listContainer} container spacing={2}>
-        {filteredPaginatedCarparks.map((cp, i) => (
+        {filteredSortedPaginatedCarparks.map((cp, i) => (
           <Grid
             key={"" + cp.carparkNumber + i}
             container

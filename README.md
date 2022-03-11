@@ -1,34 +1,35 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+# Carpark Availabilities App
+
+A real-time map visualization of all carparks in Singapore.
+
 ## Getting Started
 
-First, run the development server:
+Access the app [here](https://sg-carpark-availabilities.vercel.app/).
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+## Features
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Search for a carpark** by typing in some keyword into the search bar.
+- **Get all carparks near to your location** by clicking on _nearby carparks_.
+- **Pan and zoom into a specific carpark** by clicking on the name of the carpark in the list.
+- **Interpreting the carpark availabilities**
+  - `c: 4` => Car lots available
+  - `h: 10` => Heavy vehicle lots available
+  - `y: 2` => Motorcycle lots available
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Technologies used
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+- Built using [Next.js](https://nextjs.org/), a [React.js](https://reactjs.org/) framework.
+- Designed using [MaterialUI](https://mui.com/), a [React.js](https://reactjs.org) UI library.
+- Used `Typescript` and `SCSS` in this project.
+- Carpark data are fetched from [LTA DataMall](https://datamall.lta.gov.sg/content/datamall/en/dynamic-data.html#Traffic), [URA Carpark API](https://www.ura.gov.sg/maps/api/) and [HDB Carpark API](https://data.gov.sg/dataset/hdb-carpark-information).
+- Uses [Google Sheet Developer API](https://developers.google.com/sheets/api) to store static carpark data.
+  - The above APIs can take quite long to fetch, especially static data such as carpark information.
+  - This reduces the load-time of static carpark data (from 10-15 seconds, down to 1.6 seconds).
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## About the developer
 
-## Learn More
+I am Ezekiel, an NUS Computer Science undergraduate expecting to graduate in 2024. I enjoy spending my time ideating and creating small projects.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+If you like or have any suggestions about my work, please feel free to contact me at ezekiel@comp.nus.edu.sg.
